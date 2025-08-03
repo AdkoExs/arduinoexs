@@ -1,19 +1,16 @@
 (function(Scratch) {
-  const ws = new WebSocket("ws://192.168.100.115/ws");
+  const ws = new WebSocket("ws://192.168.100.115:81");
 
-  ws.onopen = () => console.log("WebSocket connected");
-  ws.onerror = (e) => console.error("WebSocket error:", e);
-
-  class RGBLedWS {
+  class RGBExtension {
     getInfo() {
       return {
-        id: 'espRGBws',
-        name: 'ESP RGB WS',
+        id: "espwsrgb",
+        name: "ESP RGB WS",
         blocks: [
           {
-            opcode: 'setColor',
+            opcode: "setColor",
             blockType: Scratch.BlockType.COMMAND,
-            text: 'set color R: [R] G: [G] B: [B]',
+            text: "set color R: [R] G: [G] B: [B]",
             arguments: {
               R: { type: Scratch.ArgumentType.NUMBER, defaultValue: 255 },
               G: { type: Scratch.ArgumentType.NUMBER, defaultValue: 0 },
@@ -26,17 +23,16 @@
 
     setColor(args) {
       if (ws.readyState === WebSocket.OPEN) {
-        const msg = {
+        ws.send(JSON.stringify({
           r: Math.max(0, Math.min(255, args.R)),
           g: Math.max(0, Math.min(255, args.G)),
           b: Math.max(0, Math.min(255, args.B))
-        };
-        ws.send(JSON.stringify(msg));
+        }));
       } else {
-        console.warn("WebSocket not open");
+        console.warn("WebSocket not connected");
       }
     }
   }
 
-  Scratch.extensions.register(new RGBLedWS());
+  Scratch.extensions.register(new RGBExtension());
 })(Scratch);
